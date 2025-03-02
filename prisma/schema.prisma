@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  content   String
+  author    String
+  createdAt DateTime  @default(now())
+  comments  Comment[] // ✅ Add this to link comments to posts
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  author    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+}
+
