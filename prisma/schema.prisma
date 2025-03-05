@@ -7,14 +7,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum DiscussionType {
+  PIVOT_STRATEGY
+  MVP_FEEDBACK
+  RESOURCE_SHARING
+  FUNDING_INSIGHTS
+  GENERAL
+}
+
 model Post {
-  id        String    @id @default(uuid())
-  title     String
-  content   String
-  author    String
-  likes     Int       @default(0)  // Added the likes field with default value 0
-  createdAt DateTime  @default(now())
-  comments  Comment[] // Links comments to posts
+  id                     String          @id @default(uuid())
+  title                  String
+  content                String
+  author                 String
+  likes                  Int             @default(0)
+  createdAt              DateTime        @default(now())
+  discussionType         DiscussionType  @default(GENERAL)
+  validationScore        Int             @default(0)
+  potentialImpact        Int             @default(0)
+  complexityLevel        Int             @default(0)
+  collaborationPotential Int             @default(0)
+  tags                   String?         // Comma-separated tags
+  industry               String?         // Optional industry classification
+  comments               Comment[]       // Links comments to posts
+  impactVotes            ImpactVote[]    // New relation to impact votes
 }
 
 model Comment {
@@ -45,4 +61,15 @@ model Event {
   //Basic tracking
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+model ImpactVote {
+  id        String   @id @default(uuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  userId    String   // Using string for session user ID
+  voteType  String   // Add this back to the schema
+  voteValue Int
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
 }
