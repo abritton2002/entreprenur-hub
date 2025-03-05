@@ -9,6 +9,13 @@ export default async function handler(req, res) {
     try {
       const post = await prisma.post.findUnique({
         where: { id },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          author: true,
+          createdAt: true
+        }
       });
 
       if (!post) {

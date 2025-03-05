@@ -12,8 +12,9 @@ model Post {
   title     String
   content   String
   author    String
+  likes     Int       @default(0)  // Added the likes field with default value 0
   createdAt DateTime  @default(now())
-  comments  Comment[] // ✅ Add this to link comments to posts
+  comments  Comment[] // Links comments to posts
 }
 
 model Comment {
@@ -45,4 +46,3 @@ model Event {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-
