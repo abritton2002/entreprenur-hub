@@ -25,3 +25,24 @@ model Comment {
   postId    String
 }
 
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  //Business specific fields
+  eventType   String   // e.g., "Networking", "Workshop", "Pitch Competition"
+  industry    String   // Fixed typo from "Sting" to "String"
+  
+  //Logistics
+  startDate   DateTime
+  endDate     DateTime
+  location    String
+  address     String
+  isVirtual   Boolean  @default(false)
+  meetingLink String?  //Optional, for virtual events
+  
+  //Basic tracking
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
