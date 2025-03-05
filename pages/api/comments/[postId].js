@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { getToken } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
 
@@ -12,21 +13,31 @@ export default async function handler(req, res) {
         orderBy: { createdAt: "asc" },
       });
 
-      res.status(200).json(Array.isArray(comments) ? comments : []); // ✅ Ensure array
+      res.status(200).json(Array.isArray(comments) ? comments : []); 
     } catch (error) {
       console.error("Error fetching comments:", error);
-      res.status(500).json({ error: "Internal Server Error" }); // ✅ Always return JSON
+      res.status(500).json({ error: "Internal Server Error" }); 
     }
   } else if (req.method === "POST") {
-    const { content, author } = req.body;
+    // Authenticate the user
+    const token = await getToken({ req });
+    if (!token) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
 
-    if (!content || !author) {
-      return res.status(400).json({ error: "Content and author are required" });
+    const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: "Comment content is required" });
     }
 
     try {
       const newComment = await prisma.comment.create({
-        data: { content, author, postId },
+        data: { 
+          content, 
+          author: token.name, 
+          postId 
+        },
       });
 
       res.status(201).json(newComment);

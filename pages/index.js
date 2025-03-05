@@ -7,28 +7,32 @@ export default function Home() {
 
   const featureTiles = [
     {
-      title: "Connect",
-      description: "Meet other LYKMYNDERS and expand your network",
-      href: "/connect",
-      color: "from-blue-400 to-blue-600"
-    },
-    {
-      title: "Seek Advice",
-      description: "Get wisdom and guidance from experienced minds",
-      href: "/advice",
-      color: "from-slate-500 to-slate-700"
-    },
-    {
-      title: "Discuss",
-      description: "Talk through ideas and challenges with peers",
+      title: "Discussions",
+      description: "Connect with entrepreneurs and share insights",
       href: "/discussions",
-      color: "from-teal-500 to-teal-700"
+      color: "from-blue-400 to-blue-600",
+      icon: "💬"
     },
     {
-      title: "Opportunities",
-      description: "Discover ventures and collaboration possibilities",
-      href: "/opportunities",
-      color: "from-indigo-500 to-indigo-700"
+      title: "Impact Voting",
+      description: "Validate and rate entrepreneurial ideas",
+      href: "/discussions",
+      color: "from-green-400 to-green-600",
+      icon: "🚀"
+    },
+    {
+      title: "Resource Sharing",
+      description: "Discover tools and opportunities",
+      href: "/discussions",
+      color: "from-purple-400 to-purple-600",
+      icon: "💡"
+    },
+    {
+      title: "Network",
+      description: "Expand your entrepreneurial connections",
+      href: "/discussions",
+      color: "from-indigo-400 to-indigo-600",
+      icon: "🤝"
     }
   ];
 
@@ -41,7 +45,7 @@ export default function Home() {
             LYKMYND
           </h1>
           <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-            Connect with like-minded individuals, share ideas, and discover new opportunities together.
+            An entrepreneurial community for sharing ideas, validating concepts, and growing together.
           </p>
           {!session && (
             <button
@@ -57,9 +61,12 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {featureTiles.map((tile, index) => (
             <Link href={tile.href} key={index}>
-              <div className={`bg-gradient-to-r ${tile.color} text-white rounded-xl shadow-md p-6 h-full transition transform hover:-translate-y-1 hover:shadow-lg`}>
-                <h2 className="text-2xl font-bold mb-2">{tile.title}</h2>
-                <p className="text-white text-opacity-90">{tile.description}</p>
+              <div className={`bg-gradient-to-r ${tile.color} text-white rounded-xl shadow-md p-6 h-full transition transform hover:-translate-y-1 hover:shadow-lg flex items-center`}>
+                <div className="text-4xl mr-4">{tile.icon}</div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-2">{tile.title}</h2>
+                  <p className="text-white text-opacity-90">{tile.description}</p>
+                </div>
               </div>
             </Link>
           ))}
@@ -80,11 +87,11 @@ export default function Home() {
               </div>
               <div className="p-4">
                 <p className="text-3xl font-bold text-teal-600">32</p>
-                <p className="text-gray-600">Advice Sessions</p>
+                <p className="text-gray-600">Impact Votes</p>
               </div>
               <div className="p-4">
                 <p className="text-3xl font-bold text-indigo-600">18</p>
-                <p className="text-gray-600">Opportunities</p>
+                <p className="text-gray-600">Resources Shared</p>
               </div>
             </div>
           </div>
