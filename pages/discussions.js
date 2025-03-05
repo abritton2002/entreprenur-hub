@@ -14,13 +14,33 @@ import {
 } from "react-icons/fa";
 import Layout from "../components/Layout";
 
-// Discussion type mapping
-const DISCUSSION_TYPE_ICONS = {
-  PIVOT_STRATEGY: { icon: '🔄', label: 'Pivot Strategy' },
-  MVP_FEEDBACK: { icon: '🚀', label: 'MVP Feedback' },
-  RESOURCE_SHARING: { icon: '💡', label: 'Resource Sharing' },
-  FUNDING_INSIGHTS: { icon: '💰', label: 'Funding Insights' },
-  GENERAL: { icon: '💬', label: 'General Discussion' }
+// Discussion type mapping with more details
+const DISCUSSION_TYPES = {
+  GENERAL: { 
+    label: 'General Discussion', 
+    description: 'Open conversations for entrepreneurs',
+    icon: '💬'
+  },
+  PIVOT_STRATEGY: { 
+    label: 'Pivot Strategy', 
+    description: 'Explore business model transformations',
+    icon: '🔄'
+  },
+  MVP_FEEDBACK: { 
+    label: 'MVP Feedback', 
+    description: 'Validate and refine product concepts',
+    icon: '🚀'
+  },
+  RESOURCE_SHARING: { 
+    label: 'Resource Sharing', 
+    description: 'Tools, guides, and entrepreneurial resources',
+    icon: '💡'
+  },
+  FUNDING_INSIGHTS: { 
+    label: 'Funding Insights', 
+    description: 'Fundraising strategies and investment opportunities',
+    icon: '💰'
+  }
 };
 
 // Industries list
@@ -41,6 +61,7 @@ export default function Discussions() {
   const { data: session } = useSession();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('ALL');
   const [filters, setFilters] = useState({
     type: null,
     minImpact: 0,
@@ -71,9 +92,12 @@ export default function Discussions() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  // Filter posts based on selected criteria
+  // Filter posts based on selected criteria and active tab
   const filteredPosts = posts.filter(post => {
-    const typeMatch = !filters.type || post.discussionType === filters.type;
+    const typeMatch = 
+      activeTab === 'ALL' || 
+      activeTab === post.discussionType ||
+      (activeTab === 'OTHER' && !Object.keys(DISCUSSION_TYPES).includes(post.discussionType));
     const impactMatch = post.potentialImpact >= filters.minImpact;
     const industryMatch = !filters.industry || 
       post.industry?.toLowerCase() === filters.industry.toLowerCase();
@@ -85,6 +109,17 @@ export default function Discussions() {
     
     return typeMatch && impactMatch && industryMatch && tagsMatch && searchMatch;
   });
+
+  // Prepare tabs
+  const tabs = [
+    { key: 'ALL', label: 'All Discussions', icon: '🌐' },
+    ...Object.entries(DISCUSSION_TYPES).map(([key, type]) => ({
+      key,
+      label: type.label,
+      icon: type.icon
+    })),
+    { key: 'OTHER', label: 'Other', icon: '❓' }
+  ];
 
   return (
     <Layout>
@@ -107,6 +142,25 @@ export default function Discussions() {
               </button>
             </Link>
           )}
+        </div>
+
+        {/* Discussion Type Tabs */}
+        <div className="mb-6 flex overflow-x-auto space-x-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`
+                flex items-center space-x-2 px-4 py-2 rounded-lg transition
+                ${activeTab === tab.key 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+              `}
+            >
+              <span className="text-lg">{tab.icon}</span>
+              <span className="text-sm font-medium">{tab.label}</span>
+            </button>
+          ))}
         </div>
 
         {/* Search and Filters Section */}
@@ -135,31 +189,19 @@ export default function Discussions() {
           {/* Advanced Filters */}
           {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              {/* Discussion Type Filter */}
-              <select
-                value={filters.type || ''}
-                onChange={(e) => setFilters({...filters, type: e.target.value || null})}
-                className="border p-2 rounded-md"
-              >
-                <option value="">All Discussion Types</option>
-                {Object.entries(DISCUSSION_TYPE_ICONS).map(([value, {label}]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-
               {/* Minimum Impact Filter */}
               <div>
                 <label className="block text-sm mb-1">Minimum Impact</label>
                 <input
                   type="range"
                   min="0"
-                  max="10"
+                  max="5"
                   value={filters.minImpact}
                   onChange={(e) => setFilters({...filters, minImpact: Number(e.target.value)})}
                   className="w-full"
                 />
                 <div className="text-center text-sm text-gray-600">
-                  Impact: {filters.minImpact}/10
+                  Impact: {filters.minImpact}/5
                 </div>
               </div>
 
@@ -220,10 +262,10 @@ export default function Discussions() {
                       {/* Discussion Type Badge */}
                       <div className="flex items-center mb-2">
                         <span className="text-xl mr-2">
-                          {DISCUSSION_TYPE_ICONS[post.discussionType].icon}
+                          {DISCUSSION_TYPES[post.discussionType]?.icon || '❓'}
                         </span>
                         <span className="text-sm font-semibold text-gray-600">
-                          {DISCUSSION_TYPE_ICONS[post.discussionType].label}
+                          {DISCUSSION_TYPES[post.discussionType]?.label || 'Other Discussion'}
                         </span>
                       </div>
 
@@ -247,7 +289,7 @@ export default function Discussions() {
                         {/* Impact */}
                         <div className="flex items-center mr-4">
                           <FaBolt className="mr-1 text-blue-500" />
-                          <span>Impact: {post.potentialImpact}/10</span>
+                          <span>Impact: {post.potentialImpact}/5</span>
                         </div>
 
                         {/* Industry */}
