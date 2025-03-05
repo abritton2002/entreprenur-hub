@@ -1,26 +1,27 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import Layout from '../../components/Layout';
 
 export default function PostPage() {
   const router = useRouter();
   const { id } = router.query;
   const { data: session } = useSession();
-  const [post, setPost] = useState(null);
+  const [discussion, setDiscussion] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-
-    // Fetch post
-    fetch(`/api/posts/${id}`)
-      .then((res) => res.json())
-      .then(setPost)
-      .catch((error) => console.error("Error fetching post:", error));
-
+    if (id) {
+      // Fetch discussion details
+      fetch(`/api/discussions/${id}`)
+        .then(res => res.json())
+        .then(setDiscussion)
+        .catch(error => console.error("Error fetching discussion:", error));
+      
       // Fetch comments
-      fetch(`/api/comments/${id}`)
+      fetch(`/api/discussions/${id}/comments`)
         .then(res => res.json())
         .then(setComments)
         .catch(error => console.error("Error fetching comments:", error));
@@ -56,9 +57,9 @@ export default function PostPage() {
       return;
     }
 
-    if (isVoting) return;
+    if (isSubmitting) return;
 
-    setIsVoting(true);
+    setIsSubmitting(true);
 
     try {
       const res = await fetch(`/api/posts/${id}/impact`, {
@@ -66,14 +67,14 @@ export default function PostPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           voteValue: voteValue,
-          currentValue: post.potentialImpact
+          currentValue: discussion.potentialImpact
         })
       });
 
       const data = await res.json();
       if (res.ok) {
         // Update local state with new impact score
-        setPost(prev => ({
+        setDiscussion(prev => ({
           ...prev, 
           potentialImpact: data.newImpactScore
         }));
@@ -84,18 +85,18 @@ export default function PostPage() {
       console.error("Error voting on impact:", error);
       alert("Failed to submit vote");
     } finally {
-      setIsVoting(false);
+      setIsSubmitting(false);
     }
   };
 
-  if (!post) return <p className="text-center text-gray-500">Loading...</p>;
+  if (!discussion) return <p className="text-center text-gray-500">Loading...</p>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-10">
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">{post.title}</h1>
-        <p className="mt-2">{post.content}</p>
-        <small className="text-gray-500">By {post.author}</small>
+        <h1 className="text-3xl font-bold text-gray-800">{discussion.title}</h1>
+        <p className="mt-2">{discussion.content}</p>
+        <small className="text-gray-500">By {discussion.author}</small>
       </div>
 
       {/* Comments Section */}
@@ -111,7 +112,7 @@ export default function PostPage() {
               onChange={(e) => setNewComment(e.target.value)}
             ></textarea>
             <button
-              onClick={handleCommentSubmit}
+              onClick={handleAddComment}
               className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md shadow-md"
             >
               Post Comment

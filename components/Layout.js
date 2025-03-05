@@ -16,6 +16,9 @@ export default function Layout({ children }) {
             <Link href="/discussions" className="text-blue-600 hover:text-blue-800 font-semibold">
               Discussions
             </Link>
+            <Link href="/events" className="text-blue-600 hover:text-blue-800 font-semibold">
+              Events
+            </Link>
             {session ? (
               <div className="flex items-center space-x-4">
                 <Link href="/profile" className="text-blue-600 hover:text-blue-800 font-semibold">

@@ -46,6 +46,8 @@ model Event {
   id          String   @id @default(uuid())
   title       String
   description String
+  price       Float? // Null = free event
+  imageUrl    String? // Optional image URL
   //Business specific fields
   eventType   String   // e.g., "Networking", "Workshop", "Pitch Competition"
   industry    String   // Fixed typo from "Sting" to "String"
@@ -61,7 +63,22 @@ model Event {
   //Basic tracking
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  tags        String?  // Comma-separated tags
+  attendees   Attendee[] // Relation to attendees
 }
+
+model Attendee {
+  id        String   @id @default(uuid())
+  userId    String // User ID of attendee
+  userName  String // Name of attendee
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status    String   // "registered", "attended", "cancelled"
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
 model ImpactVote {
   id        String   @id @default(uuid())
   post      Post     @relation(fields: [postId], references: [id])
