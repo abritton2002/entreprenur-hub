@@ -7,11 +7,6 @@ export default async function handler(req, res) {
   // Get the user's session token
   const token = await getToken({ req });
   
-  // Check if user is authenticated
-  if (!token) {
-    return res.status(401).json({ error: 'You must be signed in to perform this action' });
-  }
-  
   // Handle GET request (list events)
   if (req.method === 'GET') {
     try {
@@ -21,11 +16,18 @@ export default async function handler(req, res) {
         }
       });
       
-      return res.status(200).json(events);
+      // Always return an array, even if it's empty
+      return res.status(200).json(events || []);
     } catch (error) {
       console.error('Error fetching events:', error);
-      return res.status(500).json({ error: 'Failed to fetch events' });
+      // Return an empty array instead of an error object
+      return res.status(200).json([]);
     }
+  }
+  
+  // Check if user is authenticated for other methods
+  if (!token) {
+    return res.status(401).json({ error: 'You must be signed in to perform this action' });
   }
   
   // Handle POST request (create event)
