@@ -4,13 +4,18 @@ import Link from "next/link";
 import { 
   FaPlus, 
   FaComment, 
-  FaThumbsUp, 
   FaCalendarAlt, 
   FaBolt,
   FaFilter,
   FaIndustry,
   FaTags,
-  FaSearch
+  FaSearch,
+  FaLightbulb,
+  FaExchangeAlt,
+  FaShareAlt,
+  FaMoneyBillWave,
+  FaGlobe,
+  FaQuestionCircle
 } from "react-icons/fa";
 import Layout from "../components/Layout";
 
@@ -19,27 +24,32 @@ const DISCUSSION_TYPES = {
   GENERAL: { 
     label: 'General Discussion', 
     description: 'Open conversations for entrepreneurs',
-    icon: '💬'
+    icon: <FaComment className="text-[#0EA5E9]" />,
+    color: "#0EA5E9" // Secondary blue
   },
   PIVOT_STRATEGY: { 
     label: 'Pivot Strategy', 
     description: 'Explore business model transformations',
-    icon: '🔄'
+    icon: <FaExchangeAlt className="text-[#6366F1]" />,
+    color: "#6366F1" // Indigo
   },
   MVP_FEEDBACK: { 
     label: 'MVP Feedback', 
     description: 'Validate and refine product concepts',
-    icon: '🚀'
+    icon: <FaLightbulb className="text-[#F59E0B]" />,
+    color: "#F59E0B" // Amber
   },
   RESOURCE_SHARING: { 
     label: 'Resource Sharing', 
     description: 'Tools, guides, and entrepreneurial resources',
-    icon: '💡'
+    icon: <FaShareAlt className="text-[#10B981]" />,
+    color: "#10B981" // Green
   },
   FUNDING_INSIGHTS: { 
     label: 'Funding Insights', 
     description: 'Fundraising strategies and investment opportunities',
-    icon: '💰'
+    icon: <FaMoneyBillWave className="text-[#7C3AED]" />,
+    color: "#7C3AED" // Purple
   }
 };
 
@@ -112,143 +122,192 @@ export default function Discussions() {
 
   // Prepare tabs
   const tabs = [
-    { key: 'ALL', label: 'All Discussions', icon: '🌐' },
+    { key: 'ALL', label: 'All Discussions', icon: <FaGlobe className="text-[#1E40AF]" /> },
     ...Object.entries(DISCUSSION_TYPES).map(([key, type]) => ({
       key,
       label: type.label,
       icon: type.icon
     })),
-    { key: 'OTHER', label: 'Other', icon: '❓' }
+    { key: 'OTHER', label: 'Other', icon: <FaQuestionCircle className="text-gray-500" /> }
   ];
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6">
-        {/* Page Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">Entrepreneurial Discussions</h1>
-            <p className="text-gray-600 mt-1">Collaborate, validate, and grow your ideas</p>
+      {/* Page Hero Section */}
+      <div className="bg-gradient-to-r from-[#1E40AF] to-[#6366F1] py-12">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl font-bold mb-4 text-white">Entrepreneurial Discussions</h1>
+            <p className="text-xl text-blue-100">Connect, collaborate, and grow your ideas with peer feedback</p>
+            
+            {session && (
+              <Link href="/discussions/new">
+                <button className="mt-6 px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-lg shadow-lg transition flex items-center">
+                  <FaPlus className="mr-2" /> Start a New Discussion
+                </button>
+              </Link>
+            )}
           </div>
-          
-          {/* New Discussion Button */}
-          {session && (
-            <Link href="/discussions/new">
+        </div>
+        
+        {/* Wave separator */}
+        <svg className="fill-white w-full h-16 -mb-1 mt-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+          <path d="M0,96L48,117.3C96,139,192,181,288,186.7C384,192,480,160,576,144C672,128,768,128,864,149.3C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+      </div>
+      
+      <div className="container mx-auto px-6 py-8 -mt-4">
+        {/* Discussion Type Tabs - improved accessibility and visual distinction */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm p-4">
+          <h2 className="sr-only">Filter by Discussion Type</h2>
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab) => (
               <button
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center"
-                title="Start a New Discussion"
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`
+                  flex items-center gap-2 px-4 py-3 rounded-lg transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                  ${activeTab === tab.key 
+                    ? 'bg-[#1E40AF] text-white shadow-md' 
+                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'}
+                `}
+                aria-pressed={activeTab === tab.key}
+                aria-label={`Filter by ${tab.label}`}
               >
-                <FaPlus className="mr-2" /> New Discussion
+                <span className="text-lg">{tab.icon}</span>
+                <span className="font-medium">{tab.label}</span>
               </button>
-            </Link>
-          )}
+            ))}
+          </div>
         </div>
 
-        {/* Discussion Type Tabs */}
-        <div className="mb-6 flex overflow-x-auto space-x-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`
-                flex items-center space-x-2 px-4 py-2 rounded-lg transition
-                ${activeTab === tab.key 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
-              `}
-            >
-              <span className="text-lg">{tab.icon}</span>
-              <span className="text-sm font-medium">{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Search and Filters Section */}
-        <div className="mb-6">
-          {/* Search Bar */}
-          <div className="flex items-center mb-4">
-            <div className="relative flex-grow">
+        {/* Search and Filters Section - improved organization */}
+        <div className="mb-8 bg-white rounded-xl shadow-sm p-6">
+          <div className="flex flex-col lg:flex-row gap-4 items-start">
+            {/* Search Bar */}
+            <div className="relative flex-grow w-full lg:w-auto">
               <input
                 type="text"
                 placeholder="Search discussions..."
                 value={filters.search}
                 onChange={(e) => setFilters({...filters, search: e.target.value})}
-                className="w-full border p-2 pl-10 rounded-md"
+                className="w-full border border-gray-300 p-3 pl-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Search discussions"
               />
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
+            
             <button 
               onClick={() => setShowFilters(!showFilters)}
-              className="ml-2 flex items-center bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg"
+              className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition flex items-center"
+              aria-expanded={showFilters}
+              aria-controls="advanced-filters"
             >
               <FaFilter className="mr-2" /> 
-              {showFilters ? 'Hide' : 'Show'} Filters
+              {showFilters ? 'Hide Filters' : 'More Filters'}
             </button>
+            
+            {session && (
+              <Link href="/discussions/new" className="ml-auto hidden lg:block">
+                <button className="px-4 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-lg shadow transition flex items-center">
+                  <FaPlus className="mr-2" /> New Discussion
+                </button>
+              </Link>
+            )}
           </div>
 
           {/* Advanced Filters */}
           {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div id="advanced-filters" className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-100">
               {/* Minimum Impact Filter */}
-              <div>
-                <label className="block text-sm mb-1">Minimum Impact</label>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Impact Score</label>
                 <input
                   type="range"
                   min="0"
                   max="5"
                   value={filters.minImpact}
                   onChange={(e) => setFilters({...filters, minImpact: Number(e.target.value)})}
-                  className="w-full"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#7C3AED]"
+                  aria-label="Minimum impact score filter"
                 />
-                <div className="text-center text-sm text-gray-600">
-                  Impact: {filters.minImpact}/5
+                <div className="flex justify-between mt-2 text-sm text-gray-600">
+                  <span>Low Impact (0)</span>
+                  <span className="font-semibold text-[#7C3AED]">{filters.minImpact}</span>
+                  <span>High Impact (5)</span>
                 </div>
               </div>
 
               {/* Industry Filter */}
-              <select
-                value={filters.industry}
-                onChange={(e) => setFilters({...filters, industry: e.target.value})}
-                className="border p-2 rounded-md"
-              >
-                <option value="">All Industries</option>
-                {INDUSTRIES.map((ind) => (
-                  <option key={ind} value={ind}>{ind}</option>
-                ))}
-              </select>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label htmlFor="industry-filter" className="block text-sm font-medium text-gray-700 mb-2">Industry</label>
+                <select
+                  id="industry-filter"
+                  value={filters.industry}
+                  onChange={(e) => setFilters({...filters, industry: e.target.value})}
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Industries</option>
+                  {INDUSTRIES.map((ind) => (
+                    <option key={ind} value={ind}>{ind}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Tags Filter */}
-              <input
-                type="text"
-                placeholder="Filter by Tags"
-                value={filters.tags}
-                onChange={(e) => setFilters({...filters, tags: e.target.value})}
-                className="border p-2 rounded-md"
-              />
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <label htmlFor="tags-filter" className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                <input
+                  id="tags-filter"
+                  type="text"
+                  placeholder="Search by tags (e.g. startup, funding)"
+                  value={filters.tags}
+                  onChange={(e) => setFilters({...filters, tags: e.target.value})}
+                  className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
             </div>
           )}
         </div>
 
+        {/* Results summary */}
+        {!loading && (
+          <div className="mb-4 text-gray-600">
+            Showing {filteredPosts.length} {filteredPosts.length === 1 ? 'discussion' : 'discussions'}
+            {activeTab !== 'ALL' && ` in ${activeTab === 'OTHER' ? 'Other Categories' : DISCUSSION_TYPES[activeTab]?.label}`}
+            {filters.industry && ` for ${filters.industry} industry`}
+            {filters.tags && ` with tags containing "${filters.tags}"`}
+            {filters.minImpact > 0 && ` with impact score ${filters.minImpact}+`}
+          </div>
+        )}
+
         {/* Discussions List */}
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-pulse text-blue-600">Loading discussions...</div>
+          <div className="flex justify-center items-center h-64 bg-white rounded-xl shadow-sm p-10">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 border-4 border-t-[#1E40AF] border-blue-200 rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-600">Loading discussions...</p>
+            </div>
           </div>
         ) : (
           <>
             {filteredPosts.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-10 text-center">
-                <p className="text-gray-600 mb-4">No discussions match your filters.</p>
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FaSearch className="text-gray-400 text-2xl" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">No discussions found</h3>
+                <p className="text-gray-600 mb-6">Try adjusting your filters or start a new discussion</p>
                 {session ? (
                   <Link href="/discussions/new">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                    <button className="px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow transition">
                       Start a new discussion
                     </button>
                   </Link>
                 ) : (
                   <button 
                     onClick={() => signIn("google")} 
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                    className="px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow transition"
                   >
                     Sign in to start a discussion
                   </button>
@@ -256,61 +315,98 @@ export default function Discussions() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6">
-                {filteredPosts.map((post) => (
-                  <Link key={post.id} href={`/discussions/${post.id}`}>
-                    <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 border-l-4 border-blue-500">
-                      {/* Discussion Type Badge */}
-                      <div className="flex items-center mb-2">
-                        <span className="text-xl mr-2">
-                          {DISCUSSION_TYPES[post.discussionType]?.icon || '❓'}
-                        </span>
-                        <span className="text-sm font-semibold text-gray-600">
-                          {DISCUSSION_TYPES[post.discussionType]?.label || 'Other Discussion'}
-                        </span>
-                      </div>
-
-                      <h2 className="font-bold text-xl text-gray-800 hover:text-blue-600 transition">
-                        {post.title}
-                      </h2>
-                      <p className="text-gray-600 mt-2 line-clamp-2">{post.content}</p>
-                      
-                      <div className="flex items-center mt-4 text-sm text-gray-500 space-x-4 flex-wrap">
-                        {/* Author */}
-                        <div className="flex items-center mr-4">
-                          <span className="font-medium text-gray-700">{post.author}</span>
-                        </div>
-
-                        {/* Date */}
-                        <div className="flex items-center mr-4">
-                          <FaCalendarAlt className="mr-1 text-gray-400" />
-                          <span>{formatDate(post.createdAt)}</span>
-                        </div>
-
-                        {/* Impact */}
-                        <div className="flex items-center mr-4">
-                          <FaBolt className="mr-1 text-blue-500" />
-                          <span>Impact: {post.potentialImpact}/5</span>
-                        </div>
-
-                        {/* Industry */}
-                        {post.industry && (
-                          <div className="flex items-center mr-4">
-                            <FaIndustry className="mr-1 text-green-500" />
-                            <span>{post.industry}</span>
+                {filteredPosts.map((post) => {
+                  const discussionType = DISCUSSION_TYPES[post.discussionType] || {
+                    icon: <FaQuestionCircle className="text-gray-500" />,
+                    label: 'Other Discussion',
+                    color: "#64748B" // Slate
+                  };
+                  
+                  return (
+                    <Link key={post.id} href={`/discussions/${post.id}`}>
+                      <div className="group bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 border-l-4 cursor-pointer" 
+                        style={{ borderLeftColor: discussionType.color }}
+                      >
+                        <div className="flex items-start">
+                          {/* Left column - Type icon */}
+                          <div className="hidden sm:block mr-4">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center" 
+                              style={{ backgroundColor: `${discussionType.color}15` }}
+                            >
+                              {discussionType.icon}
+                            </div>
                           </div>
-                        )}
+                          
+                          {/* Right column - Content */}
+                          <div className="flex-1">
+                            {/* Discussion Type Badge and Author */}
+                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                              <div className="flex items-center">
+                                <span className="sm:hidden mr-2">
+                                  {discussionType.icon}
+                                </span>
+                                <span className="text-sm font-semibold px-3 py-1 rounded-full" 
+                                  style={{ 
+                                    backgroundColor: `${discussionType.color}15`,
+                                    color: discussionType.color 
+                                  }}
+                                >
+                                  {discussionType.label}
+                                </span>
+                              </div>
+                              
+                              <div className="flex items-center text-gray-500 text-sm">
+                                <span className="font-medium">{post.author}</span>
+                                <span className="mx-2">•</span>
+                                <FaCalendarAlt className="mr-1" />
+                                <span>{formatDate(post.createdAt)}</span>
+                              </div>
+                            </div>
 
-                        {/* Tags */}
-                        {post.tags && (
-                          <div className="flex items-center">
-                            <FaTags className="mr-1 text-purple-500" />
-                            <span>{post.tags}</span>
+                            {/* Title and Content */}
+                            <h2 className="font-bold text-xl text-gray-800 group-hover:text-[#1E40AF] transition mb-2">
+                              {post.title}
+                            </h2>
+                            <p className="text-gray-600 mb-4 line-clamp-2">{post.content}</p>
+                            
+                            {/* Metadata */}
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                              {/* Impact */}
+                              <div className="flex items-center px-3 py-1 bg-blue-50 text-blue-700 rounded-full">
+                                <FaBolt className="mr-1" />
+                                <span>Impact: {post.potentialImpact}/5</span>
+                              </div>
+
+                              {/* Industry */}
+                              {post.industry && (
+                                <div className="flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full">
+                                  <FaIndustry className="mr-1" />
+                                  <span>{post.industry}</span>
+                                </div>
+                              )}
+
+                              {/* Tags */}
+                              {post.tags && (
+                                <div className="flex items-center px-3 py-1 bg-purple-50 text-purple-700 rounded-full">
+                                  <FaTags className="mr-1" />
+                                  <span className="truncate max-w-[150px]">{post.tags}</span>
+                                </div>
+                              )}
+                              
+                              {/* Comments count */}
+                              {post.commentCount !== undefined && (
+                                <div className="flex items-center px-3 py-1 bg-gray-50 text-gray-700 rounded-full ml-auto">
+                                  <FaComment className="mr-1" />
+                                  <span>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </>
@@ -320,10 +416,11 @@ export default function Discussions() {
         {session && (
           <Link href="/discussions/new">
             <button
-              className="fixed md:hidden bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition z-10"
+              className="fixed md:hidden bottom-6 right-6 bg-[#7C3AED] hover:bg-[#6D28D9] text-white p-4 rounded-full shadow-lg transition z-10"
               title="Start a New Discussion"
+              aria-label="Start a New Discussion"
             >
-              <FaPlus />
+              <FaPlus size={20} />
             </button>
           </Link>
         )}
