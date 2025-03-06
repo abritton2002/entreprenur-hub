@@ -7,36 +7,139 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum DiscussionType {
-  PIVOT_STRATEGY
-  MVP_FEEDBACK
-  RESOURCE_SHARING
-  FUNDING_INSIGHTS
-  GENERAL
+// NextAuth.js Models
+model Account {
+  id                 String  @id @default(uuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }
 
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Core User model - integrated with NextAuth
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  lastActive    DateTime  @default(now())
+  
+  // Profile extension
+  bio           String?
+  skills        String?   // Comma-separated skills
+  businessNeeds String?   // Comma-separated business needs
+  industry      String?
+  startupStage  String?   // Using String instead of enum for SQLite
+  location      String?
+  role          String?   // e.g., "Technical Founder", "Business Development"
+  lookingFor    String?   // e.g., "Co-Founder", "Investment", "Mentorship"
+  
+  // Relationships with NextAuth models
+  accounts      Account[]
+  sessions      Session[]
+  
+  // App relationships
+  posts         Post[]          // Discussions created by user
+  comments      Comment[]       // Comments created by user
+  events        Event[]         // Events created by user
+  attendances   Attendee[]      // Events attending
+  impactVotes   ImpactVote[]    // Impact votes by user
+  
+  // Connection relationships (bidirectional)
+  sentConnections     Connection[] @relation("ConnectionSender")
+  receivedConnections Connection[] @relation("ConnectionRecipient")
+  
+  // Matches
+  matches       Match[]  @relation("MatchUser")
+  matchedWith   Match[]  @relation("MatchedWith")
+}
+
+// Bidirectional connections between users
+model Connection {
+  id           String   @id @default(uuid())
+  sender       User     @relation("ConnectionSender", fields: [senderId], references: [id])
+  senderId     String
+  recipient    User     @relation("ConnectionRecipient", fields: [recipientId], references: [id])
+  recipientId  String
+  status       String   @default("PENDING") // Using String instead of enum for SQLite
+  message      String?  // Optional connection request message
+  notes        String?  // Private notes about the connection
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([senderId, recipientId])
+}
+
+// Algorithm-generated matches between users
+model Match {
+  id          String   @id @default(uuid())
+  user        User     @relation("MatchUser", fields: [userId], references: [id])
+  userId      String
+  matchedUser User     @relation("MatchedWith", fields: [matchedUserId], references: [id])
+  matchedUserId String
+  matchScore  Float
+  matchReason String   // JSON array of reasons
+  createdAt   DateTime @default(now())
+  status      String   @default("PENDING") // PENDING, ACCEPTED, DECLINED, EXPIRED
+
+  @@unique([userId, matchedUserId])
+}
+
+// Your existing models with updated User relations
 model Post {
-  id                     String          @id @default(uuid())
+  id                     String    @id @default(uuid())
   title                  String
   content                String
-  author                 String
-  likes                  Int             @default(0)
-  createdAt              DateTime        @default(now())
-  discussionType         DiscussionType  @default(GENERAL)
-  validationScore        Int             @default(0)
-  potentialImpact        Int             @default(0)
-  complexityLevel        Int             @default(0)
-  collaborationPotential Int             @default(0)
-  tags                   String?         // Comma-separated tags
-  industry               String?         // Optional industry classification
-  comments               Comment[]       // Links comments to posts
-  impactVotes            ImpactVote[]    // New relation to impact votes
+  author                 String    // Keep the original author field
+  authorId               String?   // Make this nullable for migration
+  user                   User?     @relation(fields: [authorId], references: [id])
+  likes                  Int       @default(0)
+  createdAt              DateTime  @default(now())
+  discussionType         String    @default("GENERAL") // Using String instead of enum for SQLite
+  validationScore        Int       @default(0)
+  potentialImpact        Int       @default(0)
+  complexityLevel        Int       @default(0)
+  collaborationPotential Int       @default(0)
+  tags                   String?   // Comma-separated tags
+  industry               String?   // Optional industry classification
+  comments               Comment[] // Links comments to posts
+  impactVotes            ImpactVote[] // Relation to impact votes
 }
 
 model Comment {
   id        String   @id @default(uuid())
   content   String
-  author    String
+  author    String   // Keep the original author field
+  authorId  String?  // Make this nullable for migration
+  user      User?    @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
@@ -46,31 +149,34 @@ model Event {
   id          String   @id @default(uuid())
   title       String
   description String
-  price       Float? // Null = free event
-  imageUrl    String? // Optional image URL
-  //Business specific fields
-  eventType   String   // e.g., "Networking", "Workshop", "Pitch Competition"
-  industry    String   // Fixed typo from "Sting" to "String"
+  price       Float?   // Null = free event
+  imageUrl    String?  // Optional image URL
   
-  //Logistics
+  // Business specific fields
+  eventType   String   // e.g., "Networking", "Workshop", "Pitch Competition"
+  industry    String  
+  creatorId   String?  // Make this nullable for migration
+  creator     User?    @relation(fields: [creatorId], references: [id])
+  
+  // Logistics
   startDate   DateTime
   endDate     DateTime
   location    String
   address     String
   isVirtual   Boolean  @default(false)
-  meetingLink String?  //Optional, for virtual events
+  meetingLink String?  // Optional, for virtual events
   
-  //Basic tracking
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tags        String?  // Comma-separated tags
+  // Basic tracking
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tags        String?   // Comma-separated tags
   attendees   Attendee[] // Relation to attendees
 }
 
 model Attendee {
   id        String   @id @default(uuid())
-  userId    String // User ID of attendee
-  userName  String // Name of attendee
+  userId    String   // Keep the original userId
+  user      User?    @relation(fields: [userId], references: [id])
   eventId   String
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   status    String   // "registered", "attended", "cancelled"
@@ -83,8 +189,9 @@ model ImpactVote {
   id        String   @id @default(uuid())
   post      Post     @relation(fields: [postId], references: [id])
   postId    String
-  userId    String   // Using string for session user ID
-  voteType  String   // Add this back to the schema
+  userId    String   // Using string for session user ID 
+  user      User?    @relation(fields: [userId], references: [id])
+  voteType  String   
   voteValue Int
   createdAt DateTime @default(now())
 
