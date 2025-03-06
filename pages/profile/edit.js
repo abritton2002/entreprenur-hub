@@ -1,9 +1,15 @@
-// pages/profile/edit.js
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
-import { FaUser, FaBuilding, FaRocket, FaMapMarkerAlt, FaUsers, FaSearchDollar } from 'react-icons/fa';
+import { 
+  FaUser, 
+  FaBuilding, 
+  FaRocket, 
+  FaMapMarkerAlt, 
+  FaUsers, 
+  FaSearchDollar 
+} from 'react-icons/fa';
 
 // Industries list
 const INDUSTRIES = [
@@ -63,12 +69,12 @@ export default function EditProfile() {
   
   const [profile, setProfile] = useState({
     name: '',
+    location: '',
     bio: '',
     skills: '',
     businessNeeds: '',
     industry: '',
     startupStage: '',
-    location: '',
     role: '',
     lookingFor: '',
     profileImage: ''
@@ -97,12 +103,25 @@ export default function EditProfile() {
         })
         .then(data => {
           if (!data.notFound) {
-            setProfile(data);
+            // Populate profile with existing data
+            setProfile({
+              name: data.name || '',
+              location: data.location || '',
+              bio: data.bio || '',
+              skills: data.skills || '',
+              businessNeeds: data.businessNeeds || '',
+              industry: data.industry || '',
+              startupStage: data.startupStage || '',
+              role: data.role || '',
+              lookingFor: data.lookingFor || '',
+              profileImage: data.image || session.user.image || ''
+            });
           } else if (session.user) {
             // Pre-fill name from session
             setProfile(prev => ({
               ...prev,
-              name: session.user.name || ''
+              name: session.user.name || '',
+              profileImage: session.user.image || ''
             }));
           }
         })
@@ -122,11 +141,32 @@ export default function EditProfile() {
     }));
   };
   
+  const validateProfile = () => {
+    // Basic validation
+    if (!profile.name.trim()) {
+      setError('Name is required');
+      return false;
+    }
+
+    // Optional but recommended validations
+    if (profile.skills && profile.skills.split(',').length > 10) {
+      setError('Maximum 10 skills allowed');
+      return false;
+    }
+
+    if (profile.businessNeeds && profile.businessNeeds.split(',').length > 5) {
+      setError('Maximum 5 business needs allowed');
+      return false;
+    }
+
+    return true;
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-    setSuccess('');
+    setSuccess(''); // Reset success message
     
     try {
       const res = await fetch('/api/profile', {
@@ -142,12 +182,13 @@ export default function EditProfile() {
         throw new Error(errorData.error || 'Failed to update profile');
       }
       
-      setSuccess('Profile updated successfully!');
+      // More detailed success message
+      setSuccess('Profile updated successfully! Redirecting...');
       
-      // Redirect after a brief delay
+      // Slightly longer delay to read the success message
       setTimeout(() => {
         router.push('/profile');
-      }, 1500);
+      }, 2000);
     } catch (err) {
       console.error('Error saving profile:', err);
       setError(err.message || 'An error occurred while saving your profile');
@@ -222,7 +263,7 @@ export default function EditProfile() {
                     value={profile.location}
                     onChange={handleChange}
                     className="w-full border p-2 rounded-md focus:ring focus:ring-blue-200 focus:border-blue-500"
-                    placeholder="City, Country"
+                    placeholder="City, State, Country"
                   />
                 </div>
                 
@@ -238,12 +279,17 @@ export default function EditProfile() {
                     className="w-full border p-2 rounded-md focus:ring focus:ring-blue-200 focus:border-blue-500"
                     rows="4"
                     placeholder="Tell us about yourself, your background, and your entrepreneurial journey"
+                    maxLength={500}
                   ></textarea>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {profile.bio ? `${profile.bio.length}/500 characters` : '0/500 characters'}
+                  </p>
                 </div>
               </div>
             </div>
             
-            {/* Professional Information */}
+            {/* Rest of the form remains the same as in your previous implementation */}
+            {/* Professional Information Section */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <FaBuilding className="mr-2 text-[#1E40AF]" />
@@ -289,7 +335,7 @@ export default function EditProfile() {
                 
                 <div>
                   <label className="block text-gray-700 font-medium mb-2" htmlFor="skills">
-                    Skills
+                    Skills (comma-separated)
                   </label>
                   <input
                     type="text"
@@ -298,7 +344,7 @@ export default function EditProfile() {
                     value={profile.skills}
                     onChange={handleChange}
                     className="w-full border p-2 rounded-md focus:ring focus:ring-blue-200 focus:border-blue-500"
-                    placeholder="e.g., programming, marketing, sales (comma separated)"
+                    placeholder="e.g., programming, marketing, sales"
                   />
                 </div>
                 
@@ -322,7 +368,7 @@ export default function EditProfile() {
               </div>
             </div>
             
-            {/* Connection Preferences */}
+            {/* Connection Preferences Section */}
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <FaUsers className="mr-2 text-[#1E40AF]" />
@@ -350,7 +396,7 @@ export default function EditProfile() {
                 
                 <div>
                   <label className="block text-gray-700 font-medium mb-2" htmlFor="businessNeeds">
-                    Business Needs
+                    Business Needs (comma-separated)
                   </label>
                   <input
                     type="text"
@@ -359,7 +405,7 @@ export default function EditProfile() {
                     value={profile.businessNeeds}
                     onChange={handleChange}
                     className="w-full border p-2 rounded-md focus:ring focus:ring-blue-200 focus:border-blue-500"
-                    placeholder="e.g., funding, marketing help, technical expertise (comma separated)"
+                    placeholder="e.g., funding, marketing help, technical expertise"
                   />
                 </div>
               </div>

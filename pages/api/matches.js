@@ -19,22 +19,29 @@ export default async function handler(req, res) {
   const userId = token.sub;
   
   try {
-    const userProfile = await prisma.userProfile.findFirst({
-      where: { userId }
+    // Check for a complete user profile
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        industry: true,
+        skills: true,
+        businessNeeds: true,
+        startupStage: true,
+        location: true,
+        role: true,
+        lookingFor: true
+      }
     });
     
-    if (!userProfile) {
+    // Check if profile is complete enough for matching
+    if (!user || !isProfileComplete(user)) {
       return res.status(404).json({ 
-        error: "Profile not found", 
+        error: "Profile Incomplete", 
         message: "Please complete your profile before looking for matches"
       });
     }
-    
-    // Update last active timestamp
-    await prisma.userProfile.update({
-      where: { id: userProfile.id },
-      data: { lastActive: new Date() }
-    });
     
     // GET request - Get matches for current user
     if (req.method === "GET") {
@@ -42,16 +49,24 @@ export default async function handler(req, res) {
       const activeDate = new Date();
       activeDate.setDate(activeDate.getDate() - INACTIVE_THRESHOLD_DAYS);
       
-      // Find all other active users
-      const allProfiles = await prisma.userProfile.findMany({
+      // Find all other active users with complete profiles
+      const allUsers = await prisma.user.findMany({
         where: {
-          userId: { not: userId },
-          lastActive: { gte: activeDate }
+          id: { not: userId },
+          // Ensure other users have complete profiles too
+          NOT: {
+            OR: [
+              { industry: null },
+              { industry: '' },
+              { role: null },
+              { role: '' }
+            ]
+          }
         }
       });
       
       // Calculate match scores
-      const scoredMatches = calculateMatches(userProfile, allProfiles);
+      const scoredMatches = calculateMatches(user, allUsers);
       
       // Get top matches (limited to 10)
       const topMatches = scoredMatches
@@ -62,20 +77,22 @@ export default async function handler(req, res) {
       for (const match of topMatches) {
         await prisma.match.upsert({
           where: {
-            id: `${userProfile.id}_${match.profile.id}`
+            userId_matchedUserId: {
+              userId: userId,
+              matchedUserId: match.profile.id
+            }
           },
           update: {
             matchScore: match.score,
             matchReason: JSON.stringify(match.reasons),
-            matchDate: new Date()
+            status: 'PENDING'
           },
           create: {
-            id: `${userProfile.id}_${match.profile.id}`,
-            userId: userProfile.id,
-            matchedWith: match.profile.id,
+            userId: userId,
+            matchedUserId: match.profile.id,
             matchScore: match.score,
             matchReason: JSON.stringify(match.reasons),
-            status: "PENDING"
+            status: 'PENDING'
           }
         });
       }
@@ -89,6 +106,23 @@ export default async function handler(req, res) {
     console.error("Error generating matches:", error);
     return res.status(500).json({ error: "Failed to generate matches" });
   }
+}
+
+/**
+ * Check if a user profile is complete enough for matching
+ */
+function isProfileComplete(user) {
+  // Define minimum required fields for a complete profile
+  const requiredFields = [
+    'industry',
+    'role',
+    'lookingFor'
+  ];
+
+  // Check if all required fields have a non-empty value
+  return requiredFields.every(field => 
+    user[field] && user[field].trim() !== ''
+  );
 }
 
 /**
@@ -170,7 +204,7 @@ function calculateMatchScore(user, potentialMatch) {
   }
   
   return {
-    score,
+    score: Math.min(score, 99), // Cap the score
     reasons
   };
 }
@@ -230,6 +264,8 @@ function getOverlap(str1, str2) {
  * Simple check if locations might be the same city
  */
 function isSameCity(location1, location2) {
+  if (!location1 || !location2) return false;
+  
   const city1 = location1.split(',')[0].trim().toLowerCase();
   const city2 = location2.split(',')[0].trim().toLowerCase();
   

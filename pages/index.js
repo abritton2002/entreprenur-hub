@@ -50,7 +50,7 @@ export default function ResearchBasedLandingPage() {
     {
       title: "Network",
       description: "Expand your entrepreneurial connections",
-      href: "/discussions",
+      href: "/connections",
       icon: <FaHandshake className="w-6 h-6" />,
       color: "#1E40AF" // Primary blue for trust
     }
@@ -64,7 +64,7 @@ export default function ResearchBasedLandingPage() {
     { name: "Home", href: "/" },
     { name: "Discussions", href: "/discussions" },
     { name: "Events", href: "/events" },
-    { name: "Resources", href: "/discussions" }
+    { name: "Connections", href: "/connections" }
   ];
 
   return (

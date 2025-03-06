@@ -18,22 +18,22 @@ export default async function handler(req, res) {
   // GET request - Fetch user profile
   if (req.method === "GET") {
     try {
-      // First try to find an existing profile
-      let userProfile = await prisma.userProfile.findFirst({
-        where: { userId }
+      // First try to find an existing user
+      const user = await prisma.user.findUnique({
+        where: { id: userId }
       });
       
-      if (!userProfile) {
+      if (!user) {
         return res.status(404).json({ notFound: true });
       }
       
       // Update last active timestamp
-      await prisma.userProfile.update({
-        where: { id: userProfile.id },
+      await prisma.user.update({
+        where: { id: userId },
         data: { lastActive: new Date() }
       });
       
-      return res.status(200).json(userProfile);
+      return res.status(200).json(user);
     } catch (error) {
       console.error("Error fetching profile:", error);
       return res.status(500).json({ error: "Failed to fetch profile" });
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       startupStage, 
       location, 
       role, 
-      lookingFor, 
+      lookingFor,
       profileImage 
     } = req.body;
     
@@ -60,18 +60,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Name is required" });
     }
     
+    // Ensure email is present from token
+    if (!token.email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+    
     try {
-      // Check if profile already exists
-      const existingProfile = await prisma.userProfile.findFirst({
-        where: { userId }
+      // Check if user already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { id: userId }
       });
       
-      let userProfile;
+      let updatedUser;
       
-      if (existingProfile) {
-        // Update existing profile
-        userProfile = await prisma.userProfile.update({
-          where: { id: existingProfile.id },
+      if (existingUser) {
+        // Update existing user
+        updatedUser = await prisma.user.update({
+          where: { id: userId },
           data: {
             name,
             bio,
@@ -82,16 +87,16 @@ export default async function handler(req, res) {
             location,
             role,
             lookingFor,
-            profileImage,
-            lastActive: new Date(),
-            updatedAt: new Date()
+            image: profileImage,
+            lastActive: new Date()
           }
         });
       } else {
-        // Create new profile
-        userProfile = await prisma.userProfile.create({
+        // Create new user (unlikely with NextAuth, but kept for consistency)
+        updatedUser = await prisma.user.create({
           data: {
-            userId,
+            id: userId,
+            email: token.email,
             name,
             bio,
             skills,
@@ -101,13 +106,13 @@ export default async function handler(req, res) {
             location,
             role,
             lookingFor,
-            profileImage,
+            image: profileImage,
             lastActive: new Date()
           }
         });
       }
       
-      return res.status(200).json(userProfile);
+      return res.status(200).json(updatedUser);
     } catch (error) {
       console.error("Error saving profile:", error);
       return res.status(500).json({ error: "Failed to save profile" });

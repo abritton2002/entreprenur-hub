@@ -3,7 +3,6 @@ import Link from "next/link";
 
 export default function Layout({ children }) {
   const { data: session } = useSession();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-slate-200">
       {/* Navbar */}
@@ -21,6 +20,9 @@ export default function Layout({ children }) {
             </Link>
             {session ? (
               <div className="flex items-center space-x-4">
+                <Link href="/connections" className="text-blue-600 hover:text-blue-800 font-semibold">
+                  Connections
+                </Link>
                 <Link href="/profile" className="text-blue-600 hover:text-blue-800 font-semibold">
                   Profile
                 </Link>
@@ -42,7 +44,6 @@ export default function Layout({ children }) {
           </div>
         </div>
       </nav>
-
       {/* Main Content with padding for the fixed navbar */}
       <div className="pt-20">
         {children}

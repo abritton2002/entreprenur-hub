@@ -41,23 +41,31 @@ export default function Matches() {
   useEffect(() => {
     if (session) {
       setLoading(true);
+      setError('');
+      
       fetch('/api/matches')
         .then(res => {
           if (res.status === 404) {
+            // Specifically handle incomplete profile scenario
             setIsProfileComplete(false);
-            throw new Error('Profile not found');
+            return null;
           }
-          if (!res.ok) throw new Error('Failed to load matches');
+          
+          if (!res.ok) {
+            throw new Error('Failed to load matches');
+          }
+          
           return res.json();
         })
         .then(data => {
-          setMatches(data);
+          if (data) {
+            setMatches(data);
+            setIsProfileComplete(true);
+          }
         })
         .catch(err => {
           console.error('Error fetching matches:', err);
-          if (err.message !== 'Profile not found') {
-            setError('Failed to load matches. Please try again later.');
-          }
+          setError('Failed to load matches. Please try again later.');
         })
         .finally(() => setLoading(false));
     }
