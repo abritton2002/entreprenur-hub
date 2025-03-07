@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { 
   FaArrowRight, 
@@ -14,6 +14,7 @@ import {
   FaBars,
   FaTimes
 } from 'react-icons/fa';
+import AuthButton from "../components/AuthButton";
 
 export default function ResearchBasedLandingPage() {
   const { data: session } = useSession();
@@ -100,12 +101,9 @@ export default function ResearchBasedLandingPage() {
                   </button>
                 </Link>
               ) : (
-                <button 
-                  onClick={() => signIn("google")} 
-                  className="bg-[#1E40AF] hover:bg-[#1E3A8A] text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
-                >
+                <AuthButton className="bg-[#1E40AF] hover:bg-[#1E3A8A] text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
                   Sign In
-                </button>
+                </AuthButton>
               )}
             </div>
 
@@ -138,15 +136,12 @@ export default function ResearchBasedLandingPage() {
                   </Link>
                 ))}
                 {!session && (
-                  <button 
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      signIn("google");
-                    }} 
+                  <AuthButton 
+                    onClick={() => setMobileMenuOpen(false)} 
                     className="bg-[#1E40AF] hover:bg-[#1E3A8A] text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 text-left"
                   >
                     Sign In
-                  </button>
+                  </AuthButton>
                 )}
               </nav>
             </div>
@@ -170,12 +165,9 @@ export default function ResearchBasedLandingPage() {
             </p>
             
             {!session ? (
-              <button
-                onClick={() => signIn("google")}
-                className="px-8 py-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow-lg transition transform hover:-translate-y-1 hover:shadow-xl inline-flex items-center"
-              >
+              <AuthButton className="px-8 py-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow-lg transition transform hover:-translate-y-1 hover:shadow-xl inline-flex items-center">
                 Join the Community <FaArrowRight className="ml-2" />
-              </button>
+              </AuthButton>
             ) : (
               <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link href="/discussions">
@@ -357,12 +349,9 @@ export default function ResearchBasedLandingPage() {
               <p className="text-xl mb-8 text-blue-100">
                 Join our community of founders, innovators, and business leaders who are shaping the future.
               </p>
-              <button
-                onClick={() => signIn("google")}
-                className="px-10 py-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow-xl transition transform hover:-translate-y-1 hover:shadow-2xl border border-[#9061F9]"
-              >
+              <AuthButton className="px-10 py-4 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow-xl transition transform hover:-translate-y-1 hover:shadow-2xl border border-[#9061F9]">
                 Get Started Today
-              </button>
+              </AuthButton>
             </div>
           </div>
         </div>

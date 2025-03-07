@@ -1,6 +1,8 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
+import AuthButton from "../components/AuthButton";
+
 export default function Layout({ children }) {
   const { data: session } = useSession();
   return (
@@ -35,7 +37,7 @@ export default function Layout({ children }) {
               </div>
             ) : (
               <button
-                onClick={() => signIn("google")}
+                
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
               >
                 Sign In

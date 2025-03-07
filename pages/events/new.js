@@ -7,6 +7,8 @@ import Layout from '../../components/Layout';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import AuthButton from "../components/AuthButton";
+
 // Event types and industries for dropdown selection
 const EVENT_TYPES = [
   'Networking', 
@@ -133,7 +135,7 @@ export default function CreateEvent() {
             <h1 className="text-2xl font-bold mb-4">Sign in Required</h1>
             <p className="text-gray-600 mb-4">You need to be signed in to create an event.</p>
             <button 
-              onClick={() => signIn("google")} 
+               
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
             >
               Sign in to create an event

@@ -25,6 +25,8 @@ import {
 } from 'react-icons/fa';
 import Layout from '../../components/Layout';
 
+import AuthButton from "../components/AuthButton";
+
 // Event types with icons
 const EVENT_TYPES = {
   'Networking': { 
@@ -330,7 +332,7 @@ export default function Events() {
                   </Link>
                 ) : (
                   <button 
-                    onClick={() => signIn("google")} 
+                     
                     className="px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow transition"
                   >
                     Sign in to create an event
