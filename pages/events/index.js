@@ -122,11 +122,12 @@ export default function Events() {
     fetch("/api/events")
       .then((res) => res.json())
       .then((data) => {
-        setEvents(data);
+        setEvents(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching events:", error);
+        setEvents([]);
         setLoading(false);
       });
   }, []);
@@ -166,6 +167,10 @@ export default function Events() {
       icon: type.icon
     }))
   ];
+
+  const connectEventbrite = async () => {
+    window.location.href = '/api/eventbrite/auth';
+  };
 
   return (
     <Layout>
@@ -347,7 +352,11 @@ export default function Events() {
                   };
                   
                   return (
-                    <Link key={event.id} href={`/events/${event.id}`}>
+                    <Link 
+                      key={event.id}
+                      href={event.source === 'eventbrite' ? event.externalUrl : `/events/${event.id}`}
+                      target={event.source === 'eventbrite' ? '_blank' : '_self'}
+                    >
                       <div className="group bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 border-l-4 cursor-pointer" 
                         style={{ borderLeftColor: eventType.color }}
                       >
@@ -428,6 +437,15 @@ export default function Events() {
                                 </div>
                               )}
                             </div>
+
+                            {/* Add source badge */}
+                            <div className="mt-2">
+                              {event.source === 'eventbrite' && (
+                                <span className="text-sm bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                  Via EventBrite
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -451,6 +469,13 @@ export default function Events() {
             </button>
           </Link>
         )}
+
+        <button
+          onClick={connectEventbrite}
+          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg"
+        >
+          Connect with EventBrite
+        </button>
       </div>
     </Layout>
   );

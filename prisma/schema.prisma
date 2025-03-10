@@ -51,6 +51,7 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   lastActive    DateTime  @default(now())
+  eventbriteToken String?  // Add this field
   
   // Profile extension
   bio           String?

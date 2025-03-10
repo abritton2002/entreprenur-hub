@@ -1,7 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { getToken } from 'next-auth/jwt';
+import { prisma } from '../../../lib/prisma';
+import { fetchEventbriteAPI, standardizeEventbriteEvent } from '../../../lib/eventbrite';
 
-const prisma = new PrismaClient();
+const prismaClient = new PrismaClient();
 
 export default async function handler(req, res) {
   // Get the user's session token
@@ -10,18 +12,44 @@ export default async function handler(req, res) {
   // Handle GET request (list events)
   if (req.method === 'GET') {
     try {
-      const events = await prisma.event.findMany({
-        orderBy: {
-          startDate: 'asc'
+      // Fetch local events from your database
+      const localEvents = await prisma.event.findMany({
+        include: {
+          creator: true
         }
       });
-      
-      // Always return an array, even if it's empty
-      return res.status(200).json(events || []);
+
+      // Fetch public EventBrite events
+      const queryParams = new URLSearchParams({
+        'q': 'business',  // search term
+        'location.address': 'United States',
+        'expand': 'venue,ticket_availability'
+      }).toString();
+
+      const eventbriteResponse = await fetchEventbriteAPI(`/events/search?${queryParams}`);
+
+      // Standardize EventBrite events to match your format
+      const eventbriteEvents = eventbriteResponse.events.map(standardizeEventbriteEvent);
+
+      // Combine both sources
+      const allEvents = [
+        ...localEvents.map(event => ({ ...event, source: 'local' })),
+        ...eventbriteEvents
+      ];
+
+      // Sort by date
+      allEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+      res.json(allEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
-      // Return an empty array instead of an error object
-      return res.status(200).json([]);
+      // Return local events only if EventBrite fails
+      const localEvents = await prisma.event.findMany({
+        include: {
+          creator: true
+        }
+      });
+      res.json(localEvents.map(event => ({ ...event, source: 'local' })));
     }
   }
   
@@ -63,7 +91,7 @@ export default async function handler(req, res) {
     
     try {
       // Create the event
-      const event = await prisma.event.create({
+      const event = await prismaClient.event.create({
         data: {
           title,
           description,
