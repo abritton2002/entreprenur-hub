@@ -1,7 +1,6 @@
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-
-import AuthButton from "../components/AuthButton";
+import { FaEnvelope } from 'react-icons/fa';
 
 export default function Layout({ children }) {
   const { data: session } = useSession();
@@ -25,6 +24,9 @@ export default function Layout({ children }) {
                 <Link href="/connections" className="text-blue-600 hover:text-blue-800 font-semibold">
                   Connections
                 </Link>
+                <Link href="/messages" className="text-blue-600 hover:text-blue-800 font-semibold flex items-center">
+                  <FaEnvelope className="mr-1" /> Messages
+                </Link>
                 <Link href="/profile" className="text-blue-600 hover:text-blue-800 font-semibold">
                   Profile
                 </Link>
@@ -37,7 +39,7 @@ export default function Layout({ children }) {
               </div>
             ) : (
               <button
-                
+                onClick={() => signIn()}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
               >
                 Sign In

@@ -15,7 +15,8 @@ import {
   FaExclamationCircle,
   FaNetworkWired,
   FaBuilding,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
+  FaCommentDots
 } from 'react-icons/fa';
 
 export default function Connections() {
@@ -229,10 +230,10 @@ export default function Connections() {
                           {/* Profile Image / Avatar */}
                           <div className="flex-shrink-0 mr-4">
                             <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                              {connection.profileImage ? (
+                              {connection.user?.image ? (
                                 <img 
-                                  src={connection.profileImage} 
-                                  alt={connection.name} 
+                                  src={connection.user.image} 
+                                  alt={connection.user.name} 
                                   className="w-16 h-16 rounded-full object-cover"
                                 />
                               ) : (
@@ -243,26 +244,26 @@ export default function Connections() {
                           
                           {/* Connection Details */}
                           <div className="flex-grow mt-4 md:mt-0">
-                            <h3 className="font-semibold text-gray-800">{connection.name}</h3>
+                            <h3 className="font-semibold text-gray-800">{connection.user?.name}</h3>
                             
                             <div className="flex flex-wrap gap-2 mt-2">
-                              {connection.role && (
+                              {connection.user?.role && (
                                 <span className="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                                  {connection.role}
+                                  {connection.user.role}
                                 </span>
                               )}
                               
-                              {connection.industry && (
+                              {connection.user?.industry && (
                                 <span className="inline-flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
                                   <FaBuilding className="mr-1" />
-                                  {connection.industry}
+                                  {connection.user.industry}
                                 </span>
                               )}
                               
-                              {connection.location && (
+                              {connection.user?.location && (
                                 <span className="inline-flex items-center text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full">
                                   <FaMapMarkerAlt className="mr-1" />
-                                  {connection.location}
+                                  {connection.user.location}
                                 </span>
                               )}
                             </div>
@@ -270,15 +271,20 @@ export default function Connections() {
                           
                           {/* Action Buttons */}
                           <div className="mt-4 md:mt-0 md:ml-4 flex">
-                            <Link href={`/profile/${connection.userId}`}>
+                            <Link href={`/profile/${connection.user?.id}`}>
                               <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg mr-2">
                                 View Profile
                               </button>
                             </Link>
                             
-                            <button className="px-4 py-2 bg-[#1E40AF] hover:bg-[#1E3A8A] text-white rounded-lg">
-                              Message
-                            </button>
+                            {/* Message Button (only for accepted connections) */}
+                            {connection.status === 'ACCEPTED' && (
+                              <Link href={`/messages/${connection.user?.id}`}>
+                                <button className="px-4 py-2 bg-[#1E40AF] hover:bg-[#1E3A8A] text-white rounded-lg flex items-center">
+                                  <FaCommentDots className="mr-2" /> Message
+                                </button>
+                              </Link>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -304,10 +310,10 @@ export default function Connections() {
                           {/* Profile Image / Avatar */}
                           <div className="flex-shrink-0 mr-4">
                             <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
-                              {invitation.senderProfile?.profileImage ? (
+                              {invitation.sender?.image ? (
                                 <img 
-                                  src={invitation.senderProfile.profileImage} 
-                                  alt={invitation.senderProfile.name} 
+                                  src={invitation.sender.image} 
+                                  alt={invitation.sender.name} 
                                   className="w-16 h-16 rounded-full object-cover"
                                 />
                               ) : (
@@ -318,19 +324,19 @@ export default function Connections() {
                           
                           {/* Invitation Details */}
                           <div className="flex-grow mt-4 md:mt-0">
-                            <h3 className="font-semibold text-gray-800">{invitation.senderProfile?.name}</h3>
+                            <h3 className="font-semibold text-gray-800">{invitation.sender?.name}</h3>
                             
                             <div className="flex flex-wrap gap-2 mt-2">
-                              {invitation.senderProfile?.role && (
+                              {invitation.sender?.role && (
                                 <span className="inline-flex items-center text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                                  {invitation.senderProfile.role}
+                                  {invitation.sender.role}
                                 </span>
                               )}
                               
-                              {invitation.senderProfile?.industry && (
+                              {invitation.sender?.industry && (
                                 <span className="inline-flex items-center text-xs bg-green-50 text-green-700 px-2 py-1 rounded-full">
                                   <FaBuilding className="mr-1" />
-                                  {invitation.senderProfile.industry}
+                                  {invitation.sender.industry}
                                 </span>
                               )}
                             </div>

@@ -14,7 +14,8 @@ import {
   FaTools,
   FaUsers,
   FaBars,
-  FaTimes
+  FaTimes,
+  FaEnvelope
 } from 'react-icons/fa';
 import AuthButton from "../components/AuthButton";
 
@@ -54,12 +55,13 @@ export default function ResearchBasedLandingPage() {
     }
   ];
 
-  // Navigation items
+  // Updated navigation items with Messages
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Discussions", href: "/discussions" },
     { name: "Events", href: "/events" },
-    { name: "Connections", href: "/connections" }
+    { name: "Connections", href: "/connections" },
+    ...(session ? [{ name: "Messages", href: "/messages", icon: <FaEnvelope className="mr-1" /> }] : [])
   ];
 
   // Loading state
@@ -99,7 +101,8 @@ export default function ResearchBasedLandingPage() {
               <nav className="hidden md:flex space-x-8">
                 {navItems.map((item) => (
                   <Link href={item.href} key={item.name}>
-                    <span className="text-gray-700 hover:text-[#06B6D4] font-medium cursor-pointer transition-colors duration-200">
+                    <span className="text-gray-700 hover:text-[#06B6D4] font-medium cursor-pointer transition-colors duration-200 flex items-center">
+                      {item.icon && item.icon}
                       {item.name}
                     </span>
                   </Link>
@@ -140,9 +143,10 @@ export default function ResearchBasedLandingPage() {
                   {navItems.map((item) => (
                     <Link href={item.href} key={item.name}>
                       <span
-                        className="text-gray-700 hover:text-[#06B6D4] font-medium block cursor-pointer transition-colors duration-200"
+                        className="text-gray-700 hover:text-[#06B6D4] font-medium block cursor-pointer transition-colors duration-200 flex items-center"
                         onClick={() => setMobileMenuOpen(false)}
                       >
+                        {item.icon && item.icon}
                         {item.name}
                       </span>
                     </Link>
@@ -203,12 +207,12 @@ export default function ResearchBasedLandingPage() {
                       Browse Discussions <FaArrowRight className="ml-2" />
                     </motion.button>
                   </Link>
-                  <Link href="/events">
+                  <Link href="/messages">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       className="px-8 py-4 bg-white text-[#1E3A8A] font-semibold rounded-lg shadow-lg transition transform hover:shadow-xl inline-flex items-center justify-center"
                     >
-                      Explore Events <FaArrowRight className="ml-2" />
+                      <FaEnvelope className="mr-2" /> Messages
                     </motion.button>
                   </Link>
                 </div>
