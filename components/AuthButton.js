@@ -1,5 +1,5 @@
 // components/AuthButton.js
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 
 /**
@@ -50,5 +50,16 @@ export default function AuthButton({
         {children || text}
       </button>
     </Link>
+  );
+}
+
+export function GoogleAuthButton() {
+  return (
+    <button 
+      onClick={() => signIn("google")} 
+      className="px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow transition"
+    >
+      Sign in with Google
+    </button>
   );
 }

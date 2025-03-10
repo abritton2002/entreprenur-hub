@@ -13,43 +13,40 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       // Fetch local events from your database
-      const localEvents = await prisma.event.findMany({
-        include: {
-          creator: true
-        }
-      });
+      console.log("Fetching local events...");
+      const localEvents = await prisma.event.findMany();
+      console.log(`Found ${localEvents.length} local events`);
 
-      // Fetch public EventBrite events
-      const queryParams = new URLSearchParams({
-        'q': 'business',  // search term
-        'location.address': 'United States',
-        'expand': 'venue,ticket_availability'
-      }).toString();
+      try {
+        // Try to fetch EventBrite events, but don't fail if this part errors
+        console.log("Fetching EventBrite events...");
+        const queryParams = new URLSearchParams({
+          'q': 'business',
+          'location.address': 'United States',
+          'expand': 'venue,ticket_availability'
+        }).toString();
 
-      const eventbriteResponse = await fetchEventbriteAPI(`/events/search?${queryParams}`);
+        const eventbriteResponse = await fetchEventbriteAPI(`/events/search?${queryParams}`);
+        const eventbriteEvents = eventbriteResponse.events.map(standardizeEventbriteEvent);
+        console.log(`Found ${eventbriteEvents.length} EventBrite events`);
 
-      // Standardize EventBrite events to match your format
-      const eventbriteEvents = eventbriteResponse.events.map(standardizeEventbriteEvent);
+        // Combine both sources
+        const allEvents = [
+          ...localEvents.map(event => ({ ...event, source: 'local' })),
+          ...eventbriteEvents
+        ];
 
-      // Combine both sources
-      const allEvents = [
-        ...localEvents.map(event => ({ ...event, source: 'local' })),
-        ...eventbriteEvents
-      ];
-
-      // Sort by date
-      allEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-      res.json(allEvents);
+        // Sort by date
+        allEvents.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        return res.json(allEvents);
+      } catch (eventbriteError) {
+        // If EventBrite fails, just return local events
+        console.error('EventBrite API error:', eventbriteError);
+        return res.json(localEvents.map(event => ({ ...event, source: 'local' })));
+      }
     } catch (error) {
-      console.error('Error fetching events:', error);
-      // Return local events only if EventBrite fails
-      const localEvents = await prisma.event.findMany({
-        include: {
-          creator: true
-        }
-      });
-      res.json(localEvents.map(event => ({ ...event, source: 'local' })));
+      console.error('Database error:', error);
+      return res.status(500).json({ error: 'Failed to fetch events from database' });
     }
   }
   

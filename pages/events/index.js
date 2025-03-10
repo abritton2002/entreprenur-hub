@@ -25,8 +25,6 @@ import {
 } from 'react-icons/fa';
 import Layout from '../../components/Layout';
 
-import AuthButton from "../components/AuthButton";
-
 // Event types with icons
 const EVENT_TYPES = {
   'Networking': { 
@@ -122,8 +120,22 @@ export default function Events() {
     // Fetch events from the API
     setLoading(true);
     fetch("/api/events")
-      .then((res) => res.json())
+      .then((res) => {
+        // Check if response is ok
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        
+        // Check content type to ensure it's JSON
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Response is not JSON");
+        }
+        
+        return res.json();
+      })
       .then((data) => {
+        console.log("Events data:", data); // Add this for debugging
         setEvents(Array.isArray(data) ? data : []);
         setLoading(false);
       })
@@ -337,7 +349,7 @@ export default function Events() {
                   </Link>
                 ) : (
                   <button 
-                     
+                    onClick={() => signIn("google")} 
                     className="px-6 py-3 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold rounded-lg shadow transition"
                   >
                     Sign in to create an event
